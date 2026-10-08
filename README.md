@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Universidade Master Educação — Site Institucional
 
-## Getting Started
+Aplicação web completa e responsiva desenvolvida com **Next.js (App Router)** + **Tailwind CSS** para a Universidade Master Educação.
 
-First, run the development server:
+## 🚀 Tecnologias
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Framework**: Next.js 15 (App Router)
+- **Estilização**: Tailwind CSS v4
+- **Ícones**: Lucide React
+- **Linguagem**: TypeScript
+- **Deploy**: Vercel (pronto)
+
+## 📁 Estrutura
+
+```
+src/
+├── app/
+│   ├── globals.css          # Estilos globais + design tokens
+│   ├── layout.tsx           # Layout raiz (SEO + Provider)
+│   ├── page.tsx             # Página principal
+│   └── admin/
+│       └── page.tsx         # Painel administrativo
+├── components/
+│   ├── Header.tsx           # Cabeçalho responsivo + WhatsApp flutuante
+│   ├── HeroSection.tsx      # Hero com badges de aceleração
+│   ├── DifferentialsSection.tsx  # Diferenciais da instituição
+│   ├── CategoriesSection.tsx     # Grade de categorias de cursos
+│   ├── EnrollmentForm.tsx   # Formulário de matrícula em 4 passos
+│   ├── AdminPanel.tsx       # Painel CRUD de cursos
+│   └── Footer.tsx           # Rodapé completo
+├── contexts/
+│   └── CoursesContext.tsx   # Estado global + persistência localStorage
+└── lib/
+    └── courses-data.ts      # Dados, tipos e utilitários
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🏃 Rodando localmente
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm install
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Acesse `http://localhost:3000`
 
-## Learn More
+## 🔐 Área Administrativa
 
-To learn more about Next.js, take a look at the following resources:
+Acesse `/admin` com a senha: **master2025**
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+> **Importante**: Altere a senha no arquivo `src/components/AdminPanel.tsx` (constante `ADMIN_PIN`) antes de colocar em produção.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📲 Configuração do WhatsApp
 
-## Deploy on Vercel
+No arquivo `src/lib/courses-data.ts`, altere:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```ts
+const WHATSAPP_NUMBER = "5511999999999"; // ← Número real aqui
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🌐 Deploy na Vercel
+
+1. Faça `git push` para o GitHub
+2. Importe o repositório na [Vercel](https://vercel.com)
+3. Deploy automático em cada `git push`
+
+## 📚 Categorias de Ensino
+
+1. Cursos de Evolução / Progressão Funcional
+2. Cursos de Aperfeiçoamento ou Atualização
+3. Ensino Médio (Aceleração / EJA)
+4. Cursos Técnicos
+5. Cursos Sequenciais
+6. Cursos Superiores de Tecnologia (Tecnólogos)
+7. Cursos Superiores de Bacharelado
+8. Cursos Superiores de Licenciatura
+9. Pós-Graduação e MBA
+
+---
+
+© Universidade Master Educação
