@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { GraduationCap, Menu, X, MessageCircle, ShieldCheck } from "lucide-react";
-import { buildWhatsAppUrl } from "@/lib/courses-data";
+import { buildWhatsAppUrl } from "@/lib/whatsapp";
 
 const NAV_LINKS = [
   { label: "Início", href: "#inicio" },

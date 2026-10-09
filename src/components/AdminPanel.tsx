@@ -7,9 +7,9 @@ import {
   ChevronDown, ChevronUp, Save, X, ShieldCheck,
   ArrowLeft, BookOpen, ToggleLeft, ToggleRight, AlertCircle
 } from "lucide-react";
-import { CATEGORIES, CourseCategory, getCategoryLabel } from "@/lib/courses-data";
+import { CATEGORIES, CourseCategory, getCategoryLabel } from "@/lib/legacy-store";
 import { useCourses } from "@/contexts/CoursesContext";
-import type { Course } from "@/lib/courses-data";
+import type { Course } from "@/lib/legacy-store";
 
 const ADMIN_PIN = "master2025"; // ← Altere o PIN padrão aqui
 

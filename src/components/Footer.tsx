@@ -1,7 +1,7 @@
 "use client";
 
 import { GraduationCap, MessageCircle, MapPin, Phone, Mail, Clock, ShieldCheck } from "lucide-react";
-import { buildWhatsAppUrl } from "@/lib/courses-data";
+import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import Link from "next/link";
 
 const CONTACT_INFO = [

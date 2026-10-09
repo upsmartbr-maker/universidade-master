@@ -1,7 +1,7 @@
 "use client";
 
 import { MessageCircle, BookOpen, Zap, ArrowRight } from "lucide-react";
-import { buildWhatsAppUrl } from "@/lib/courses-data";
+import { buildWhatsAppUrl } from "@/lib/whatsapp";
 
 const ACCELERATION_BADGES = [
   { label: "Aproveitamento de Estudos e Disciplinas", icon: "📋" },

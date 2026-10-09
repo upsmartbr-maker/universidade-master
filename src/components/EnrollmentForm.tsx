@@ -1,12 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   MessageCircle, Send, CheckCircle, ChevronRight,
-  ChevronLeft, User, Mail, Phone, Loader2
+  ChevronLeft, User, Mail, Phone, Loader2, Clock, BookOpen
 } from "lucide-react";
-import { CATEGORIES, getCategoryLabel, buildWhatsAppUrl, buildLeadMessage } from "@/lib/courses-data";
-import { useCourses } from "@/contexts/CoursesContext";
+import {
+  COURSES_CATALOG,
+  COURSE_CATEGORIES,
+  type Course,
+} from "@/lib/courses-data";
+import { buildWhatsAppUrl, buildLeadMessage } from "@/lib/whatsapp";
+
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -27,12 +32,30 @@ function phoneMask(v: string) {
     .slice(0, 15);
 }
 
-export default function EnrollmentForm() {
-  const { courses } = useCourses();
+/** Render a subtle info badge with duration / workload when available */
+function CourseBadge({ course }: { course: Course | undefined }) {
+  if (!course) return null;
 
+  const info = course.duration
+    ? `⏱ Duração estimada: ${course.duration}`
+    : course.workload
+    ? `📚 Carga horária: ${course.workload}`
+    : null;
+
+  if (!info) return null;
+
+  return (
+    <div className="mt-2 inline-flex items-center gap-1.5 bg-blue-50 border border-blue-100 text-blue-700 text-xs font-medium px-3 py-1.5 rounded-full animate-fade-in">
+      <Clock className="w-3.5 h-3.5 flex-shrink-0" />
+      {info}
+    </div>
+  );
+}
+
+export default function EnrollmentForm() {
   const [step, setStep] = useState<Step>(1);
   const [category, setCategory] = useState("");
-  const [course, setCourse] = useState("");
+  const [course, setCourse] = useState(""); // course name or "__custom__"
   const [customCourse, setCustomCourse] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -41,16 +64,34 @@ export default function EnrollmentForm() {
   const [success, setSuccess] = useState<"whatsapp" | "lead" | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const availableCourses = category
-    ? courses.filter((c) => c.category === category && c.status === "ativo")
-    : [];
+  // ── Sorted courses for the selected category ──────────────
+  const availableCourses: Course[] = useMemo(() => {
+    if (!category) return [];
+    const list = COURSES_CATALOG[category] ?? [];
+    return [...list].sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
+  }, [category]);
+
+  // ── Selected course object (for badge rendering) ──────────
+  const selectedCourseObj: Course | undefined = useMemo(
+    () =>
+      course && course !== "__custom__"
+        ? availableCourses.find((c) => c.name === course)
+        : undefined,
+    [course, availableCourses]
+  );
 
   const isOtherCourse = course === "__custom__";
-  const effectiveCourse = isOtherCourse ? customCourse : course;
+  const effectiveCourse = isOtherCourse ? customCourse.trim() : course;
 
+  // ── Step guards ───────────────────────────────────────────
   const canGoStep2 = category !== "";
-  const canGoStep3 = course !== "" && (!isOtherCourse || customCourse.trim() !== "");
-  const canGoStep4 = name.trim() !== "" && email.trim() !== "" && phone.trim() !== "" && modality !== "";
+  const canGoStep3 =
+    course !== "" && (!isOtherCourse || customCourse.trim() !== "");
+  const canGoStep4 =
+    name.trim() !== "" &&
+    email.trim() !== "" &&
+    phone.trim() !== "" &&
+    modality !== "";
 
   function reset() {
     setStep(1);
@@ -66,7 +107,7 @@ export default function EnrollmentForm() {
 
   function handleWhatsApp() {
     const msg = buildLeadMessage({
-      category: getCategoryLabel(category as never),
+      category,
       course: effectiveCourse,
       name,
       email,
@@ -86,6 +127,7 @@ export default function EnrollmentForm() {
 
   const STEP_LABELS = ["Categoria", "Curso", "Seus Dados", "Envio"];
 
+  // ── Success screen ────────────────────────────────────────
   if (success) {
     return (
       <section id="inscricao" className="py-20 bg-gradient-to-br from-blue-50 to-indigo-50">
@@ -116,10 +158,11 @@ export default function EnrollmentForm() {
     );
   }
 
+  // ── Main form ─────────────────────────────────────────────
   return (
     <section id="inscricao" className="py-20 bg-gradient-to-br from-blue-50 to-indigo-50">
       <div className="max-w-2xl mx-auto px-4 sm:px-6">
-        {/* Header */}
+        {/* Section header */}
         <div className="text-center mb-10">
           <span className="inline-block text-blue-600 font-semibold text-sm uppercase tracking-widest mb-3">
             Simulação &amp; Matrícula
@@ -174,6 +217,7 @@ export default function EnrollmentForm() {
 
         {/* Card */}
         <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+          {/* Card header bar */}
           <div className="bg-gradient-to-r from-blue-700 to-indigo-700 px-6 py-4">
             <p className="text-white font-bold text-sm">
               Passo {step} de 4 —{" "}
@@ -185,18 +229,18 @@ export default function EnrollmentForm() {
           </div>
 
           <div className="p-6 sm:p-8">
-            {/* STEP 1 */}
+            {/* ── STEP 1: Categoria ─────────────────────────── */}
             {step === 1 && (
               <div className="space-y-3">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Categoria de Ensino *
                 </label>
                 <div className="grid gap-2">
-                  {CATEGORIES.map((cat) => (
+                  {COURSE_CATEGORIES.map((cat) => (
                     <label
-                      key={cat.id}
+                      key={cat}
                       className={`flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all ${
-                        category === cat.id
+                        category === cat
                           ? "border-blue-600 bg-blue-50"
                           : "border-gray-100 hover:border-blue-200 hover:bg-blue-50/50"
                       }`}
@@ -204,21 +248,32 @@ export default function EnrollmentForm() {
                       <input
                         type="radio"
                         name="category"
-                        value={cat.id}
-                        checked={category === cat.id}
+                        value={cat}
+                        checked={category === cat}
                         onChange={() => {
-                          setCategory(cat.id);
+                          setCategory(cat);
                           setCourse("");
                           setCustomCourse("");
                         }}
-                        className="accent-blue-600 w-4 h-4"
+                        className="accent-blue-600 w-4 h-4 flex-shrink-0"
                       />
                       <span
-                        className={`text-sm font-medium ${
-                          category === cat.id ? "text-blue-700" : "text-gray-700"
+                        className={`text-sm font-medium capitalize ${
+                          category === cat ? "text-blue-700" : "text-gray-700"
                         }`}
                       >
-                        {cat.label}
+                        {cat
+                          .split(" ")
+                          .map((w) =>
+                            w.length > 3
+                              ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()
+                              : w.toLowerCase()
+                          )
+                          .join(" ")}
+                      </span>
+                      {/* course count badge */}
+                      <span className="ml-auto text-xs font-bold text-gray-400 flex-shrink-0">
+                        {COURSES_CATALOG[cat]?.length ?? 0} cursos
                       </span>
                     </label>
                   ))}
@@ -226,12 +281,20 @@ export default function EnrollmentForm() {
               </div>
             )}
 
-            {/* STEP 2 */}
+            {/* ── STEP 2: Curso ─────────────────────────────── */}
             {step === 2 && (
               <div className="space-y-4">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Curso Desejado *
                 </label>
+
+                {/* Category pill reminder */}
+                <div className="flex items-center gap-2 text-xs text-blue-700 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
+                  <BookOpen className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="font-semibold">{category}</span>
+                  <span className="text-blue-400">— {availableCourses.length} opções disponíveis</span>
+                </div>
+
                 <select
                   value={course}
                   onChange={(e) => {
@@ -242,17 +305,21 @@ export default function EnrollmentForm() {
                 >
                   <option value="">— Selecione um curso —</option>
                   {availableCourses.map((c) => (
-                    <option key={c.id} value={c.name}>
-                      {c.name} ({c.workload})
+                    <option key={c.name} value={c.name}>
+                      {c.name}
                     </option>
                   ))}
                   <option value="__custom__">
-                    + Outro curso não listado (Digitar manualmente)
+                    [ + Outro curso não listado (Digitar manualmente) ]
                   </option>
                 </select>
 
+                {/* Duration / workload badge */}
+                {!isOtherCourse && <CourseBadge course={selectedCourseObj} />}
+
+                {/* Manual input when "other" is selected */}
                 {isOtherCourse && (
-                  <div>
+                  <div className="animate-fade-in">
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Qual curso você deseja cursar? *
                     </label>
@@ -262,19 +329,20 @@ export default function EnrollmentForm() {
                       onChange={(e) => setCustomCourse(e.target.value)}
                       placeholder="Digite o nome do curso..."
                       className="w-full border-2 border-blue-300 focus:border-blue-500 rounded-xl px-4 py-3 text-sm outline-none transition-colors"
+                      autoFocus
                     />
                   </div>
                 )}
 
                 {availableCourses.length === 0 && !isOtherCourse && (
                   <p className="text-sm text-amber-600 bg-amber-50 p-3 rounded-lg border border-amber-200">
-                    Nenhum curso ativo nesta categoria no momento. Escolha a opção manual abaixo.
+                    Nenhum curso cadastrado nesta categoria no momento. Escolha a opção manual abaixo.
                   </p>
                 )}
               </div>
             )}
 
-            {/* STEP 3 */}
+            {/* ── STEP 3: Dados pessoais ────────────────────── */}
             {step === 3 && (
               <div className="space-y-4">
                 <div>
@@ -335,14 +403,16 @@ export default function EnrollmentForm() {
               </div>
             )}
 
-            {/* STEP 4 */}
+            {/* ── STEP 4: Envio ─────────────────────────────── */}
             {step === 4 && (
               <div className="space-y-5">
                 {/* Summary */}
                 <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5 space-y-2">
-                  <h4 className="font-bold text-blue-800 text-sm mb-3">Resumo da sua solicitação:</h4>
+                  <h4 className="font-bold text-blue-800 text-sm mb-3">
+                    Resumo da sua solicitação:
+                  </h4>
                   {[
-                    ["Categoria", getCategoryLabel(category as never)],
+                    ["Categoria", category],
                     ["Curso", effectiveCourse],
                     ["Nome", name],
                     ["E-mail", email],
@@ -351,7 +421,9 @@ export default function EnrollmentForm() {
                   ].map(([k, v]) => (
                     <div key={k} className="flex justify-between text-sm">
                       <span className="text-gray-500">{k}:</span>
-                      <span className="text-gray-900 font-medium text-right max-w-[60%]">{v}</span>
+                      <span className="text-gray-900 font-medium text-right max-w-[60%] break-words">
+                        {v}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -380,7 +452,7 @@ export default function EnrollmentForm() {
               </div>
             )}
 
-            {/* Navigation */}
+            {/* ── Navigation ────────────────────────────────── */}
             <div className="flex justify-between mt-8 pt-6 border-t border-gray-100">
               {step > 1 ? (
                 <button

@@ -4,7 +4,7 @@ import {
   TrendingUp, RefreshCw, BookOpen, Wrench, Layers,
   Cpu, GraduationCap, Users, Award
 } from "lucide-react";
-import { CATEGORIES } from "@/lib/courses-data";
+import { CATEGORIES } from "@/lib/legacy-store";
 import { useCourses } from "@/contexts/CoursesContext";
 
 const ICON_MAP: Record<string, React.ElementType> = {

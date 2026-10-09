@@ -13,7 +13,7 @@ import {
   saveCourses,
   generateId,
   CourseCategory,
-} from "@/lib/courses-data";
+} from "@/lib/legacy-store";
 
 interface CoursesContextValue {
   courses: Course[];
